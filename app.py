@@ -1,37 +1,46 @@
 import streamlit as st
 from openai import OpenAI
 
-# هذا مفتاحك اللي شفته بالتحذير.. حطيته الك هنا حتى يشتغل فوراً
-client = OpenAI(api_key="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")
+st.set_page_config(page_title="FestAI - التحليل الذكي", layout="wide")
 
-st.set_page_config(page_title="FestAI - 1% Mindset", layout="wide")
+# واجهة إدخال المفتاح بشكل آمن
+with st.sidebar:
+    st.title("🔐 الإعدادات")
+    api_key = st.text_input("ادخل مفتاح OpenAI الجديد هنا:", type="password")
+    st.info("ملاحظة: المفتاح يُستخدم فقط لتشغيل هذا التحليل ولا يتم خزنه بشكل دائم.")
 
-st.title("📊 نظام FestAI للتحليل الذكي")
+st.title("📊 نظام FestAI للتحليل بعقلية الـ 1%")
 st.markdown("---")
 
-# الخانات اللي ردتها بالصور
-col1, col2 = st.columns(2)
-with col1:
-    p_name = st.text_input("اسم المشروع")
-    sector = st.selectbox("القطاع", ["تكنولوجيا", "عقارات", "تجارة", "زراعة"])
-with col2:
-    budget = st.text_input("الميزانية")
-    location = st.text_input("المكان (بغداد/الدورة مثلاً)")
+if not api_key:
+    st.warning("الرجاء إدخال مفتاح الـ API في القائمة الجانبية لتشغيل النظام.")
+else:
+    client = OpenAI(api_key=api_key)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        p_name = st.text_input("اسم المشروع")
+        sector = st.selectbox("القطاع", ["تكنولوجيا", "عقارات", "تجارة", "زراعة", "صناعة"])
+    with col2:
+        budget = st.text_input("الميزانية التقديرية")
+        location = st.text_input("موقع التنفيذ (مثلاً: بغداد - الدورة)")
 
-desc = st.text_area("وصف الفكرة (اشرح مشروعك هنا)")
+    desc = st.text_area("اشرح فكرة مشروعك بالتفصيل (شنو اللي يميزه؟)")
 
-if st.button("توليد التحليل بالذكاء الاصطناعي ✨"):
-    if p_name and desc:
-        with st.spinner("جاري التحليل بعقلية الـ 1%..."):
-            try:
-                prompt = f"حلل مشروع {p_name} في {location}. الميزانية: {budget}. الوصف: {desc}. اعطني نصيحة صريحة جداً."
-                response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": prompt}]
-                )
-                st.success("النتيجة:")
-                st.write(response.choices[0].message.content)
-            except Exception as e:
-                st.error(f"اكو مشكلة بالمفتاح أو الاتصال: {e}")
-    else:
-        st.warning("املأ اسم المشروع والوصف أولاً.")
+    if st.button("توليد التحليل الذكي ✨"):
+        if p_name and desc:
+            with st.spinner("جاري التفكير بعقلية الـ 1%..."):
+                try:
+                    prompt = f"حلل مشروع {p_name} في {location}. القطاع: {sector}. الميزانية: {budget}. الوصف: {desc}. كن صريحاً جداً وحلل الفرص والمخاطر."
+                    response = client.chat.completions.create(
+                        model="gpt-3.5-turbo",
+                        messages=[{"role": "system", "content": "أنت مستشار أعمال خبير، لا تجامل، أعطِ الحقائق المرة قبل الحلوة."},
+                                 {"role": "user", "content": prompt}]
+                    )
+                    st.success("تم التحليل بنجاح!")
+                    st.markdown("### 📝 النتائج:")
+                    st.write(response.choices[0].message.content)
+                except Exception as e:
+                    st.error(f"حدث خطأ: {e}")
+        else:
+            st.error("لازم تملأ اسم المشروع والوصف حتى أقدر أحللك اياه.")
